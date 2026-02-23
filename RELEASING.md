@@ -1,35 +1,55 @@
-# Releasing
+# Releasing (manual, same flow as `clevers-agent`)
 
-## Automatic GitHub releases (semantic-release)
+This repository uses a manual release flow via GitHub Actions (not semantic-release).
 
-Pushes to `main` run `.github/workflows/release.yml`, which uses `semantic-release` to:
+## Workflows
 
-1. Calculate the next version from conventional commits
-2. Create a Git tag and GitHub Release
-3. Update plugin version metadata and `readme.txt` stable tag
-4. Attach a plugin ZIP to the GitHub release
+- `.github/workflows/create_release.yml`
+  - Manually triggered (`workflow_dispatch`)
+  - Bumps plugin version and `readme.txt` stable tag using `bin/bump-version.php`
+  - Commits the version bump
+  - Pushes the branch and tag
+  - Creates the GitHub Release
 
-Use conventional commits:
+- `.github/workflows/release_zip.yml`
+  - Runs on GitHub Release publish
+  - Builds and attaches the plugin ZIP
 
-- `fix: ...` -> patch release
-- `feat: ...` -> minor release
-- `feat!: ...` or `BREAKING CHANGE:` -> major release
+- `.github/workflows/deploy_wordpress_org.yml`
+  - Runs on GitHub Release publish
+  - Deploys to WordPress.org SVN using `10up/action-wordpress-plugin-deploy`
 
-## Automatic WordPress.org deployment
+## Required GitHub secrets
 
-When a GitHub Release is published, `.github/workflows/wporg-deploy.yml` deploys to WordPress.org SVN.
+For `create_release.yml`:
 
-Required GitHub repository secrets:
+- `RELEASE_BOT_TOKEN`
+  - Personal Access Token with repo write permissions
+  - Used so the release creation/tag push can trigger downstream workflows reliably
 
-- `WP_ORG_PLUGIN_SLUG` (example: `multicouriers-shipping-for-woocommerce`)
-- `WP_ORG_SVN_USERNAME`
-- `WP_ORG_SVN_PASSWORD`
+For `deploy_wordpress_org.yml`:
 
-The workflow deploys the released tag to:
+- `WORDPRESS_ORG_USERNAME`
+- `WORDPRESS_ORG_PASSWORD`
 
-- `trunk/`
-- `tags/<version>/`
+## How to create a release
 
-## Manual deploy trigger (optional)
+1. Go to **Actions > Create Release**
+2. Click **Run workflow**
+3. Enter:
+   - `version`: e.g. `1.0.1`
+   - `target_branch`: usually `main`
+   - `draft_release`: optional
 
-You can run the `Deploy to WordPress.org` workflow manually and pass a tag like `v1.0.1`.
+The workflows will then:
+
+1. Create/push tag `vX.Y.Z`
+2. Create GitHub Release
+3. Attach the plugin ZIP
+4. Deploy to WordPress.org SVN
+
+## Notes
+
+- `create_release.yml` validates semver format (`X.Y.Z`)
+- `release_zip.yml` validates that plugin header `Version` matches the release tag
+- `.distignore` controls what is excluded from the ZIP/SVN package
