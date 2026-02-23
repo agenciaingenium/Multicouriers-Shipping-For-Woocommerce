@@ -200,6 +200,7 @@ class MCWS_Admin
         echo '<input type="hidden" name="action" value="mcws_activate_premium" />';
         echo '<h2 style="margin-top:0;">' . esc_html__('Activar Multicouriers Premium', 'multicouriers-shipping-for-woocommerce') . '</h2>';
         echo '<p>' . esc_html__('Pega tu API Key de Multicouriers. La URL API es fija y no requiere cambios.', 'multicouriers-shipping-for-woocommerce') . '</p>';
+        echo '<p class="description">' . esc_html__('Este plugin se conecta a servicios externos de Multicouriers para cotizaciones, diagnostico y (en admin) actualizacion de comunas de Chile. Revisa el readme para detalle de datos enviados.', 'multicouriers-shipping-for-woocommerce') . '</p>';
         echo '<p><strong>' . esc_html__('API URL fija:', 'multicouriers-shipping-for-woocommerce') . '</strong> <code>' . esc_html($api_url) . '</code></p>';
         echo '<label for="mcws-api-token"><strong>' . esc_html__('API Key', 'multicouriers-shipping-for-woocommerce') . '</strong></label><br />';
         echo '<input id="mcws-api-token" name="mcws_api_token" type="password" class="regular-text" autocomplete="off" placeholder="mcws_live_xxx" />';
