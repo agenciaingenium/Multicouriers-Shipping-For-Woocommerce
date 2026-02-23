@@ -36,18 +36,25 @@ jobs:
           php-version: '8.2'
           tools: composer
 
-      - name: Set up Node (optional)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
       - name: Composer install (no-dev)
         if: hashFiles('composer.json') != ''
         run: composer install --no-dev --prefer-dist --no-interaction --no-progress
 
+      - name: Set up Node (optional)
+        if: hashFiles('package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: NPM install
         if: hashFiles('package.json') != ''
-        run: npm ci
+        shell: bash
+        run: |
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       - name: NPM build
         if: hashFiles('package.json') != ''
