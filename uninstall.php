@@ -26,9 +26,9 @@ delete_transient('mcws_cities_api_cl_v1_failure');
 global $wpdb;
 
 if (isset($wpdb) && is_a($wpdb, 'wpdb')) {
-    $like = $wpdb->esc_like('_transient_mcws_admin_notice_') . '%';
-    $like_timeout = $wpdb->esc_like('_transient_timeout_mcws_admin_notice_') . '%';
+    $mcws_like = $wpdb->esc_like('_transient_mcws_admin_notice_') . '%';
+    $mcws_like_timeout = $wpdb->esc_like('_transient_timeout_mcws_admin_notice_') . '%';
 
-    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Cleanup of plugin-owned transient rows during uninstall.
-    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s", $like, $like_timeout));
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Cleanup of plugin-owned transient rows during uninstall.
+    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s", $mcws_like, $mcws_like_timeout));
 }

@@ -12,7 +12,7 @@
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: multicouriers-shipping-for-woocommerce
- * Domain Path: /languages
+ * Domain Path: /languages/
  * WC requires at least: 8.0
  * WC tested up to: 10.0
  * WC-Order-Storage: custom
@@ -46,7 +46,7 @@ if (!defined('MCWS_PLUGIN_URL')) {
 }
 
 if (!defined('MCWS_VERSION')) {
-    define('MCWS_VERSION', '1.0.0');
+    define('MCWS_VERSION', '1.0.3');
 }
 
 if (!defined('MCWS_API_BASE_URL')) {
