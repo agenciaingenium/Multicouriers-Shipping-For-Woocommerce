@@ -3,7 +3,7 @@
  * Plugin Name: Multicouriers Envio para Tiendas
  * Plugin URI: https://multicouriers.cl
  * Description: Envio para Chile con tarifa fija por comuna/region (gratis) y cotizacion premium via API Multicouriers.
- * Version: 1.0.4
+ * Version: 1.0.5
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
