@@ -46,7 +46,7 @@ if (!defined('MCWS_PLUGIN_URL')) {
 }
 
 if (!defined('MCWS_VERSION')) {
-    define('MCWS_VERSION', '1.0.3');
+    define('MCWS_VERSION', '1.0.5');
 }
 
 if (!defined('MCWS_API_BASE_URL')) {

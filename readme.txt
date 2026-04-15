@@ -99,4 +99,3 @@ For the Chile cities dataset endpoint, the plugin performs a read-only request a
 * Unified fixed-rate behavior to use the global Multicouriers rules table (including exclude rules)
 * Simplified fixed-rate zone modal to avoid duplicate rule configuration
 * Added external services disclosure documentation
-
