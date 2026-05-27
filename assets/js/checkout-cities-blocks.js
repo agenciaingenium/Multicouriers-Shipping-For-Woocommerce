@@ -194,14 +194,13 @@
             return;
         }
 
-        // Preserve current selection before re-rendering
-        var currentValue = select.value;
-        var preserveValue = currentValue && select.options.length > 0;
-
         var signature = [disabledPlaceholder ? '1' : '0', selectedValue || '', cities.join('|')].join('::');
-        if (select.dataset.mcwsOptionsSignature === signature && !preserveValue) {
+        if (select.dataset.mcwsOptionsSignature === signature && !select.dataset.mcwsForceRender) {
             return;
         }
+
+        // Store current value before clearing
+        var currentValue = select.value || select.dataset.mcwsLastValue || '';
 
         select.innerHTML = '';
 
@@ -217,18 +216,21 @@
             select.appendChild(option);
         });
 
-        // Restore selection: prefer provided selectedValue, fall back to current valid value
+        // Try to restore: prefer selectedValue > currentValue > placeholder
         if (selectedValue && cities.indexOf(selectedValue) >= 0) {
             select.value = selectedValue;
-        } else if (preserveValue && cities.indexOf(currentValue) >= 0) {
+        } else if (currentValue && cities.indexOf(currentValue) >= 0) {
             select.value = currentValue;
         } else {
             select.value = '';
         }
 
+        // Remember this value for future renders
+        select.dataset.mcwsLastValue = select.value;
+        select.dataset.mcwsOptionsSignature = signature;
         select.disabled = !!disabledPlaceholder;
         select.style.display = '';
-        select.dataset.mcwsOptionsSignature = signature;
+        select.removeAttribute('data-mcws-force-render');
     }
 
     function setPostcode(scope) {
@@ -269,6 +271,9 @@
         if (!citySelect) {
             return;
         }
+
+        // Keep track of previously selected value
+        var lastValue = citySelect.dataset.mcwsLastValue || '';
 
         hideNativeCityInput(cityInput);
 
@@ -318,6 +323,9 @@
                 if (!nativeInput) {
                     return;
                 }
+
+                // Remember selection for persistence
+                citySelect.dataset.mcwsLastValue = citySelect.value || '';
 
                 if (String(nativeInput.value || '') === String(citySelect.value || '')) {
                     setPostcode(scope);
