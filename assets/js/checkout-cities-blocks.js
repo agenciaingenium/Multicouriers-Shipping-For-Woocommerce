@@ -272,14 +272,13 @@
             return;
         }
 
-        // Keep track of previously selected value
         var lastValue = citySelect.dataset.mcwsLastValue || '';
 
         hideNativeCityInput(cityInput);
 
         var stateCode = String(stateField.value || '');
         var cities = stateCode ? getCitiesForState(stateCode) : [];
-        var currentValue = String(cityInput.value || '');
+        var currentValue = citySelect.value || cityInput.value || lastValue;
         renderCitySelectOptions(citySelect, cities, currentValue, !stateCode);
 
         setPostcode(scope);
