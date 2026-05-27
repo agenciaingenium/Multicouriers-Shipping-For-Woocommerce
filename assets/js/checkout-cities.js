@@ -71,7 +71,12 @@
 
         Object.keys(cities).forEach(function (key) {
             var value = cities[key];
-            var label = Array.isArray(value) ? value[0] : value;
+            var label;
+            if (Array.isArray(value)) {
+                label = value.name || value[0] || '';
+            } else {
+                label = value || '';
+            }
             options += '<option value="' + label + '">' + label + '</option>';
         });
 

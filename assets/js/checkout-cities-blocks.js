@@ -28,7 +28,13 @@
 
         Object.keys(regionCities).forEach(function (key) {
             var value = regionCities[key];
-            var name = Array.isArray(value) ? value[0] : value;
+            var name;
+            if (Array.isArray(value)) {
+                // New format: {name: '...', postal_code: '...'}
+                name = value.name || value[0] || '';
+            } else {
+                name = value || '';
+            }
             if (typeof name === 'string' && name.length > 0) {
                 list.push(name);
             }
@@ -350,7 +356,7 @@
                     return false;
                 }
 
-                if (node.id && node.id.indexOf('mcws-') === 0 && node.tagName === 'DATALIST') {
+                if (node.id && typeof node.id === 'string' && node.id.indexOf('mcws-') === 0 && node.tagName === 'DATALIST') {
                     return false;
                 }
 

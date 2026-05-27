@@ -312,6 +312,41 @@ class MCWS_Chile_Address
 
         if (isset($places['CL']) && is_array($places['CL'])) {
             self::$cities['CL'] = $places['CL'];
+            // Also hydrate postal codes from local file fallback
+            self::hydrate_postal_codes_from_local($places['CL']);
+        }
+    }
+
+    private static function hydrate_postal_codes_from_local(array $places_by_region): void
+    {
+        foreach ($places_by_region as $region_code => $cities) {
+            if (!is_array($cities)) {
+                continue;
+            }
+
+            if (!isset(self::$postal_codes['CL'][$region_code])) {
+                self::$postal_codes['CL'][$region_code] = array();
+            }
+
+            foreach ($cities as $city_key => $city_data) {
+                // Support both old format (string city name) and new format (array with postal_code)
+                if (is_array($city_data)) {
+                    $city_name = isset($city_data['name']) ? $city_data['name'] : (is_string($city_key) ? $city_key : '');
+                    $postal_code = isset($city_data['postal_code']) ? $city_data['postal_code'] : '';
+                } else {
+                    $city_name = is_string($city_data) ? $city_data : (is_string($city_key) ? $city_key : '');
+                    $postal_code = '';
+                }
+
+                if ($city_name === '') {
+                    continue;
+                }
+
+                $normalized = self::normalize_city_key($city_name);
+                if ($postal_code !== '') {
+                    self::$postal_codes['CL'][$region_code][$normalized] = $postal_code;
+                }
+            }
         }
     }
 
@@ -328,9 +363,10 @@ class MCWS_Chile_Address
             return array();
         }
 
-        // Avoid blocking checkout/cart (including Store API requests used by WooCommerce Blocks).
-        // The plugin can still work with bundled local cities when remote data is unavailable.
-        $should_fetch_remote = is_admin() || wp_doing_cron() || (defined('WP_CLI') && WP_CLI);
+        // Fetch from API when transient cache is not set (first load or cache cleared).
+        // On frontend (non-admin), always try to fetch if cache is stale to get postal codes for FedEx.
+        // The plugin works with bundled local cities when remote data is unavailable.
+        $should_fetch_remote = true;
         $should_fetch_remote = (bool) apply_filters('mcws_fetch_cities_api_in_request', $should_fetch_remote);
         if (!$should_fetch_remote) {
             return array();
@@ -338,7 +374,7 @@ class MCWS_Chile_Address
 
         $url = apply_filters('mcws_cities_api_url', 'https://app.multicouriers.cl/api/chile/cities');
         $response = wp_remote_get($url, array(
-            'timeout' => 3,
+            'timeout' => 5,
             'headers' => array(
                 'Accept' => 'application/json',
             ),
@@ -362,10 +398,37 @@ class MCWS_Chile_Address
             return array();
         }
 
-        set_transient($cache_key, $json, 12 * HOUR_IN_SECONDS);
-        delete_transient($failure_cache_key);
+        // Handle wrapped API response format: {"success": true, "data": [...], ...}
+        if (isset($json['success']) && isset($json['data'])) {
+            if (empty($json['data'])) {
+                // API returned empty data, treat as failure to trigger local file fallback
+                set_transient($failure_cache_key, 1, 10 * MINUTE_IN_SECONDS);
+                return array();
+            }
+            // Return the actual data array for processing
+            set_transient($cache_key, $json['data'], 12 * HOUR_IN_SECONDS);
+            delete_transient($failure_cache_key);
+            return $json['data'];
+        }
 
-        return $json;
+        // Legacy support: if the response keys look like region codes (CL-AP, etc)
+        // treat the whole response as the cities data
+        $has_region_keys = false;
+        foreach (array_keys($json) as $key) {
+            if (strpos($key, 'CL-') === 0) {
+                $has_region_keys = true;
+                break;
+            }
+        }
+        if ($has_region_keys) {
+            set_transient($cache_key, $json, 12 * HOUR_IN_SECONDS);
+            delete_transient($failure_cache_key);
+            return $json;
+        }
+
+        // Unknown response format, treat as failure
+        set_transient($failure_cache_key, 1, 10 * MINUTE_IN_SECONDS);
+        return array();
     }
 
     private static function hydrate_from_api_payload(array $api_data): void
