@@ -456,16 +456,14 @@ class MCWS_Chile_Address
                     continue;
                 }
 
-                self::$cities['CL'][$region][$city_name] = $city_name;
-
                 $postal_code = is_array($city_info) && isset($city_info['postal_code'])
                     ? trim((string) $city_info['postal_code'])
                     : '';
 
-                if ($postal_code !== '') {
-                    $normalized = self::normalize_city_key($city_name);
-                    self::$postal_codes['CL'][$region][$normalized] = $postal_code;
-                }
+                self::$cities['CL'][$region][$city_name] = array(
+                    'name' => $city_name,
+                    'postal_code' => $postal_code,
+                );
             }
         }
     }
