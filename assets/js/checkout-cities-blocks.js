@@ -30,8 +30,9 @@
             var value = regionCities[key];
             var name;
             if (Array.isArray(value)) {
-                // New format: {name: '...', postal_code: '...'}
                 name = value.name || value[0] || '';
+            } else if (value && typeof value === 'object') {
+                name = value.name || '';
             } else {
                 name = value || '';
             }
@@ -193,8 +194,12 @@
             return;
         }
 
+        // Preserve current selection before re-rendering
+        var currentValue = select.value;
+        var preserveValue = currentValue && select.options.length > 0;
+
         var signature = [disabledPlaceholder ? '1' : '0', selectedValue || '', cities.join('|')].join('::');
-        if (select.dataset.mcwsOptionsSignature === signature) {
+        if (select.dataset.mcwsOptionsSignature === signature && !preserveValue) {
             return;
         }
 
@@ -212,8 +217,11 @@
             select.appendChild(option);
         });
 
+        // Restore selection: prefer provided selectedValue, fall back to current valid value
         if (selectedValue && cities.indexOf(selectedValue) >= 0) {
             select.value = selectedValue;
+        } else if (preserveValue && cities.indexOf(currentValue) >= 0) {
+            select.value = currentValue;
         } else {
             select.value = '';
         }

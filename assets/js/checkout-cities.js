@@ -74,6 +74,8 @@
             var label;
             if (Array.isArray(value)) {
                 label = value.name || value[0] || '';
+            } else if (value && typeof value === 'object') {
+                label = value.name || '';
             } else {
                 label = value || '';
             }
