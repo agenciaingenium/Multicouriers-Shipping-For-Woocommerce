@@ -86,10 +86,7 @@ class MCWS_Api_Client
             $status = (int) wp_remote_retrieve_response_code($response);
             $body = wp_remote_retrieve_body($response);
             $data = json_decode($body, true);
-            $correlation = wp_remote_retrieve_header($response, 'x-mc-correlation-id');
-            if (!is_string($correlation) || $correlation === '') {
-                $correlation = is_array($data) && isset($data['correlation_id']) ? (string) $data['correlation_id'] : $correlationId;
-            }
+            $correlation = $this->extract_correlation_id($response, $data, $correlationId);
 
             if ($status >= 500 && $attempt < $attempts) {
                 $this->backoff_sleep($backoff_ms[$attempt - 1] ?? 700);
@@ -164,10 +161,7 @@ class MCWS_Api_Client
         $status = (int) wp_remote_retrieve_response_code($response);
         $raw = wp_remote_retrieve_body($response);
         $data = json_decode($raw, true);
-        $correlation = wp_remote_retrieve_header($response, 'x-mc-correlation-id');
-        if (!is_string($correlation) || $correlation === '') {
-            $correlation = is_array($data) && isset($data['correlation_id']) ? (string) $data['correlation_id'] : $correlationId;
-        }
+        $correlation = $this->extract_correlation_id($response, $data, $correlationId);
 
         if ($status < 200 || $status >= 300 || !is_array($data) || empty($data['new_key'])) {
             return array(
@@ -210,10 +204,7 @@ class MCWS_Api_Client
         $status = (int) wp_remote_retrieve_response_code($response);
         $raw = wp_remote_retrieve_body($response);
         $data = json_decode($raw, true);
-        $correlation = wp_remote_retrieve_header($response, 'x-mc-correlation-id');
-        if (!is_string($correlation) || $correlation === '') {
-            $correlation = is_array($data) && isset($data['correlation_id']) ? (string) $data['correlation_id'] : $correlationId;
-        }
+        $correlation = $this->extract_correlation_id($response, $data, $correlationId);
 
         if ($status < 200 || $status >= 300 || !is_array($data)) {
             return array(
@@ -260,10 +251,7 @@ class MCWS_Api_Client
         $status = (int) wp_remote_retrieve_response_code($response);
         $raw = wp_remote_retrieve_body($response);
         $data = json_decode($raw, true);
-        $correlation = wp_remote_retrieve_header($response, 'x-mc-correlation-id');
-        if (!is_string($correlation) || $correlation === '') {
-            $correlation = is_array($data) && isset($data['correlation_id']) ? (string) $data['correlation_id'] : $correlationId;
-        }
+        $correlation = $this->extract_correlation_id($response, $data, $correlationId);
 
         if ($status < 200 || $status >= 300 || !is_array($data) || empty($data['project']) || !is_array($data['project'])) {
             return array(
@@ -294,10 +282,7 @@ class MCWS_Api_Client
         }
 
         $status = (int) wp_remote_retrieve_response_code($response);
-        $correlation = wp_remote_retrieve_header($response, 'x-mc-correlation-id');
-        if (!is_string($correlation) || $correlation === '') {
-            $correlation = $correlationId;
-        }
+        $correlation = $this->extract_correlation_id($response, null, $correlationId);
 
         return array('ok' => $status >= 200 && $status < 300, 'status' => $status, 'error' => '', 'correlation_id' => $correlation);
     }
@@ -351,6 +336,16 @@ class MCWS_Api_Client
     private function generate_correlation_id(): string
     {
         return 'mcws-' . wp_generate_uuid4();
+    }
+
+    private function extract_correlation_id($response, ?array $data, string $fallback): string
+    {
+        $correlation = wp_remote_retrieve_header($response, 'x-mc-correlation-id');
+        if (!is_string($correlation) || $correlation === '') {
+            $correlation = is_array($data) && isset($data['correlation_id']) ? (string) $data['correlation_id'] : $fallback;
+        }
+
+        return $correlation;
     }
 
     private function backoff_sleep(int $milliseconds): void

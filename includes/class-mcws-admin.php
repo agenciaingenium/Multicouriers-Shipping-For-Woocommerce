@@ -1049,7 +1049,7 @@ class MCWS_Admin
 
     private static function normalize_key(string $value): string
     {
-        return strtoupper(remove_accents(trim($value)));
+        return MCWS_Utils::normalize_key($value);
     }
 
     public static function maybe_refresh_project_status(): void

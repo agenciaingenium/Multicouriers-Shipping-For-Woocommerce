@@ -122,49 +122,7 @@ class MCWS_Fixed_Rates_Method extends WC_Shipping_Method
 
     private function normalize_key(string $value): string
     {
-        $value = strtoupper(trim($value));
-
-        return remove_accents($value);
-    }
-
-    private function get_global_rates_maps(): array
-    {
-        $rows = class_exists('MCWS_Admin') ? MCWS_Admin::get_fixed_rates_table() : array();
-        $communes = array();
-        $regions = array();
-
-        if (!is_array($rows)) {
-            return array($communes, $regions);
-        }
-
-        foreach ($rows as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
-
-            $scope = isset($row['scope']) ? (string) $row['scope'] : '';
-            $cost = isset($row['cost']) ? (float) $row['cost'] : null;
-            if ($cost === null || $cost < 0) {
-                continue;
-            }
-
-            if ($scope === 'commune') {
-                $key = isset($row['commune']) ? $this->normalize_key((string) $row['commune']) : '';
-                if ($key !== '') {
-                    $communes[$key] = $cost;
-                }
-                continue;
-            }
-
-            if ($scope === 'region') {
-                $key = isset($row['region']) ? $this->normalize_key((string) $row['region']) : '';
-                if ($key !== '') {
-                    $regions[$key] = $cost;
-                }
-            }
-        }
-
-        return array($communes, $regions);
+        return MCWS_Utils::normalize_key($value);
     }
 
     private function get_global_rates_rows(): array

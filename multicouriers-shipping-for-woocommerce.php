@@ -55,6 +55,7 @@ if (!defined('MCWS_API_BASE_URL')) {
 
 require_once MCWS_PLUGIN_DIR . 'includes/class-mcws-chile-address.php';
 require_once MCWS_PLUGIN_DIR . 'includes/class-mcws-logger.php';
+require_once MCWS_PLUGIN_DIR . 'includes/class-mcws-utils.php';
 require_once MCWS_PLUGIN_DIR . 'includes/class-mcws-fallback-rates.php';
 require_once MCWS_PLUGIN_DIR . 'includes/class-mcws-api-client.php';
 require_once MCWS_PLUGIN_DIR . 'includes/class-mcws-admin.php';
@@ -97,6 +98,7 @@ add_action('woocommerce_blocks_loaded', static function () {
         return;
     }
 
+    require_once MCWS_PLUGIN_DIR . 'includes/blocks/class-mcws-abstract-blocks-support.php';
     require_once MCWS_PLUGIN_DIR . 'includes/blocks/class-mcws-fixed-rates-blocks.php';
     require_once MCWS_PLUGIN_DIR . 'includes/blocks/class-mcws-dynamic-blocks.php';
 
